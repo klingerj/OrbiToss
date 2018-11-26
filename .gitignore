@@ -1,0 +1,12 @@
+OrbiToss/Intermediate
+OrbiToss/Saved
+*.VC.db
+*.VC.opendb
+*.ipch
+*.suo
+OrbiToss/Content/StarterContent/
+OrbiToss/Binaries/
+OrbiToss/.vs/
+*.sln
+*.sln~master
+Build/
