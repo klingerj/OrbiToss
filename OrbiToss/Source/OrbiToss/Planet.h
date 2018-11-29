@@ -27,10 +27,17 @@ public:
 	float radius;
 
 	// If true, consider this planet/body in the force calculations of other bodies
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")
 	bool considerForce;
 
 	// Changing aspects of planet
-	FVector pos, vel, acc;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")
+	FVector pos; 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")
+	FVector vel;
+
+	FVector acc;
 	FVector force;
 	
 
