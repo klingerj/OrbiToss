@@ -9,6 +9,16 @@ APlanet::APlanet() : mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), consi
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SetActorEnableCollision(true);
+
+	AsteroidBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootComponent"));
+	RootComponent = AsteroidBoxComponent;
+	AsteroidBoxComponent->InitBoxExtent(FVector(12.0f, 15.0f, 12.0f));
+	AsteroidBoxComponent->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	AsteroidBoxComponent->SetSimulatePhysics(false);
+	AsteroidBoxComponent->SetEnableGravity(false);
+	AsteroidBoxComponent->SetNotifyRigidBodyCollision(true);
+
 }
 
 // Called when the game starts or when spawned
@@ -38,7 +48,7 @@ void APlanet::Tick(float DeltaTime)
 		force = -(G * mass * 20000) / (dist.Size() * dist.Size() * 0.01) * dir; // Apply Law of Universal Gravitation
 
 		// Euler integration
-		acc = force / mass;
+		acc = FVector(0,0,0); //force / mass;
 		vel = vel + acc * DeltaTime;
 		pos = pos + vel * DeltaTime;
 

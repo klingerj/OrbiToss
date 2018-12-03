@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Planet.h"
+#include "Components/SphereComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -15,10 +16,12 @@ class ORBITOSS_API ATarget : public AActor
 	
 public:	
 	// Sets default values for this actor's properties
-	ATarget();
+	ATarget(const FObjectInitializer& objInit);
 
 	// Coefficient of restitution
 	const float e = 0.75;
+
+	USphereComponent* CollisionComp;
 
 protected:
 	// Called when the game starts or when spawned

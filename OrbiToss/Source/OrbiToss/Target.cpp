@@ -4,10 +4,18 @@
 
 
 // Sets default values
-ATarget::ATarget()
+ATarget::ATarget(const FObjectInitializer& objInit) : Super(objInit)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	CollisionComp = objInit.CreateDefaultSubobject<USphereComponent>(this, TEXT("SphereComp"));
+	CollisionComp->InitSphereRadius(0.3f);
+	CollisionComp->SetSimulatePhysics(false);
+	CollisionComp->SetEnableGravity(false);
+	CollisionComp->SetNotifyRigidBodyCollision(true);
+	CollisionComp->SetCollisionProfileName(TEXT("OverlapAll"));
+	RootComponent = CollisionComp;
 
 	SetActorEnableCollision(true);
 }
@@ -31,11 +39,15 @@ void ATarget::Tick(float DeltaTime)
 
 }
 
+// TODO: Something's wrong in here, but idk what; weirdness happens even without the velocity set, though.
+	// Maybe it's just the hit boxes?
 void ATarget::bounce(AActor* SelfActor, class AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
 	if (OtherActor && (OtherActor != this) && OtherActor->IsA(APlanet::StaticClass())) {
 		// Handle collision
-		// GetActorRotation() returns as [pitch, roll, yaw] (Y, X, Z)
+		// GetActorRotation() returns as [pitch, roll, yaw]
+		// R goes from body to world space; we want the inverse of this
 		FRotationMatrix R(GetActorRotation());
+		FMatrix worldToBody = R.Inverse();
 
 		// Cumulative post-collision velocity
 		FVector totalV(0, 0, 0);
@@ -44,22 +56,18 @@ void ATarget::bounce(AActor* SelfActor, class AActor* OtherActor, FVector Normal
 		for (int i = 0; i < 3; ++i) {
 			// Unit vector tangential to the target in this plane, in world space
 			FVector tHat = R.GetColumn(i);
+			if (tHat.Size() != 1) {
+				tHat.Normalize();
+			}
 
 			// Unit vector normal to the target in this plane, in world space
 			FVector nHat = R.GetColumn((i + 1) % 3);
+			if (nHat.Size() != 1) {
+				nHat.Normalize();
+			}
 
-			// Initial velocity in our plane
-			FVector inVel(OtherActor->GetVelocity()[i], OtherActor->GetVelocity()[(i + 1) % 3], 0);
-
-			// Unit vector representing the planet's velocity
-			FVector vHat(inVel);
-			vHat.Normalize();
-
-			// Angle of collision
-			float alpha = FVector::DotProduct(vHat, tHat);
-
-			// Resulting velocity in body space
-			FVector outVel(inVel.Size() * cos(alpha), inVel.Size() * e * sin(alpha), 0);
+			// Resulting velocity in world space; velocities in the normal direction get scaled by the COR
+			FVector outVel = FVector::DotProduct(OtherActor->GetVelocity(), tHat) * tHat + e * FVector::DotProduct(OtherActor->GetVelocity(), nHat) * nHat;
 
 			// Accumulate velocity
 			totalV += outVel;
