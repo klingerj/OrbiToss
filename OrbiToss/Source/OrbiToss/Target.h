@@ -21,6 +21,8 @@ public:
 	// Coefficient of restitution
 	const float e = 0.75;
 
+	bool beenHit;
+
 	USphereComponent* CollisionComp;
 
 protected:
