@@ -3,7 +3,9 @@
 #pragma once
 
 #include <cmath>
-#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Engine/World.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -16,10 +18,11 @@ class ORBITOSS_API APlanet : public AActor
 	
 public:	
 	// Sets default values for this actor's properties
-	APlanet();
+	APlanet(const FObjectInitializer& objInit);
 
-	// TODO: Rename
-	UBoxComponent* AsteroidBoxComponent;
+	USphereComponent* CollisionComp;
+
+	UProjectileMovementComponent* ProjectileMovement;
 
 	// Universal Gravitational Constant, modified to fit our simulation
 	const float G = 6.67408; // SI units: 6.67408e-11 m^3/(kg * s^2); this way, all forces will be returned as F * 10^31. We will drop the coefficient

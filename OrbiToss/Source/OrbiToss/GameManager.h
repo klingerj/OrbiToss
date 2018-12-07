@@ -3,27 +3,22 @@
 #pragma once
 
 #include "Planet.h"
-#include "Components/BoxComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Target.generated.h"
+#include "GameManager.generated.h"
 
 UCLASS()
-class ORBITOSS_API ATarget : public AActor
+class ORBITOSS_API AGameManager : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ATarget(const FObjectInitializer& objInit);
+	AGameManager();
 
-	// Coefficient of restitution
-	const float e = 0.75;
-
-	bool beenHit;
-
-	UBoxComponent* CollisionComp;
+	APlanet* p;
+	TSubclassOf<class APlanet> PlanetClass;
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,7 +28,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void bounce(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	
 	
 };

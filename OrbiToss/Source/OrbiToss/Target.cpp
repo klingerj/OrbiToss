@@ -9,12 +9,13 @@ ATarget::ATarget(const FObjectInitializer& objInit) : Super(objInit), beenHit(fa
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CollisionComp = objInit.CreateDefaultSubobject<USphereComponent>(this, TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(1.f);
+	CollisionComp = objInit.CreateDefaultSubobject<UBoxComponent>(this, TEXT("BoxComp"));
+	CollisionComp->InitBoxExtent(FVector(50.f, 50.f, 10.f));
 	CollisionComp->SetSimulatePhysics(false);
 	CollisionComp->SetEnableGravity(false);
 	CollisionComp->SetNotifyRigidBodyCollision(true);
 	CollisionComp->SetCollisionProfileName(TEXT("OverlapAll"));
+	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	RootComponent = CollisionComp;
 
 	SetActorEnableCollision(true);
@@ -26,7 +27,7 @@ void ATarget::BeginPlay()
 	Super::BeginPlay();
 	
 	// Call bounce() when the target is hit
-	OnActorHit.AddDynamic(this, &ATarget::bounce);
+	CollisionComp->OnComponentHit.AddDynamic(this, &ATarget::bounce);
 }
 
 // Called every frame
@@ -40,9 +41,9 @@ void ATarget::Tick(float DeltaTime)
 }
 
 // TODO: The collision isn't triggering for some reason?
-void ATarget::bounce(AActor* SelfActor, class AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
+void ATarget::bounce(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) {
 	if (OtherActor && (OtherActor != this) && OtherActor->IsA(APlanet::StaticClass())) {
-		UE_LOG(LogClass, Log, TEXT("Target collision triggered"));
+		UE_LOG(LogClass, Log, TEXT("TARGET COLLISION"));
 		// Handle collision
 		// GetActorRotation() returns as [pitch, roll, yaw]
 		// R's columns are the coordinate axes of the target expressed in world coordinates
@@ -90,7 +91,7 @@ void ATarget::bounce(AActor* SelfActor, class AActor* OtherActor, FVector Normal
 		}
 
 		// Set resultant velocity
-		OtherActor->GetRootComponent()->ComponentVelocity = -outvel;
+		OtherActor->GetRootComponent()->ComponentVelocity = outvel;
 	}
 }
 
