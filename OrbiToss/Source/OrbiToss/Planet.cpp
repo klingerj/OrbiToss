@@ -4,7 +4,7 @@
 #include "Target.h"
 
 // Sets default values
-APlanet::APlanet() : mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), manager(nullptr), captureStar(nullptr), isCaptured(false), considerForce(false), pos(0, 0, 0), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
+APlanet::APlanet() : mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), manager(nullptr), captureStar(nullptr), isCaptured(false), considerForce(true), pos(-195, -30, 100), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
@@ -27,9 +27,10 @@ void APlanet::BeginPlay()
 // Called every frame
 void APlanet::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);	
+	Super::Tick(DeltaTime);
     if (!isCaptured) {
         if (considerForce) {
+            force = FVector(0, 0, 0);
             for (int i = 0; i < manager->stars.size(); ++i)
             {
                 FVector dist = pos - manager->stars.at(i)->pos;
@@ -37,19 +38,14 @@ void APlanet::Tick(float DeltaTime)
                 dir.Normalize();
                 force += -(G * mass * manager->stars.at(i)->mass) / (dist.Size() * dist.Size() * 0.01) * dir;
             }
+            // Update position and velocity accordingly
+            acc = force / mass;
+            vel = vel + acc * DeltaTime;
+            pos = pos + vel * DeltaTime;
+
+            GetRootComponent()->ComponentVelocity = vel;
+            SetActorLocation(pos);
         }
-
-		// TEST: Have the planet orbit a nonexistent sun located at the origin
-		//FVector dist = pos - FVector(375, 0, 370); // Vector from sun to planet
-		//FVector dir = dist;
-		//dir.Normalize(); // Unit vector pointing from sun to planet
-		//force = -(G * mass * 20000) / (dist.Size() * dist.Size() * 0.01) * dir; // Apply Law of Universal Gravitation
-
-		/*CollisionComp->AddForce(force, NAME_None, false);*/
-
-		// Update position and velocity accordingly
-		GetRootComponent()->ComponentVelocity = vel;
-		SetActorLocation(pos);
 
         // Check for capture
         for (int i = 0; i < manager->goalStars.size(); ++i) {
@@ -67,13 +63,10 @@ void APlanet::Tick(float DeltaTime)
                 acc = FVector(0);
             }
         }
-
-        return;
 	}
     // The planet has been captured in a goal star's orbit
     else {
         // Make sure these are set appropriately
-        isCaptured = true;
         considerForce = false;
 
         float orbit = captureStar->radius + captureStar->numPlanetsOrbiting * 200;
@@ -99,7 +92,7 @@ void APlanet::BounceOffTarget(ATarget* target) {
 	// Outgoing vector
 	outvel = vel - 2.0 * FVector::DotProduct(vel, surfaceNormal) * surfaceNormal;
 	FVector tmp = 2.0 * FVector::DotProduct(vel, surfaceNormal) * surfaceNormal;
-	UE_LOG(LogClass, Log, TEXT("Intermediate vector: (%f, %f, %f)"), tmp[0], tmp[1], tmp[2])
+    UE_LOG(LogClass, Log, TEXT("Intermediate vector: (%f, %f, %f)"), tmp[0], tmp[1], tmp[2])
 		UE_LOG(LogClass, Log, TEXT("Surface normal: (%f, %f, %f)"), surfaceNormal[0], surfaceNormal[1], surfaceNormal[2])
 	
 	// Set resultant velocity
