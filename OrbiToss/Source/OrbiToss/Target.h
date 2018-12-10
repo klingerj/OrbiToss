@@ -21,8 +21,6 @@ public:
 	// Coefficient of restitution
 	const float e = 0.75;
 
-	bool beenHit;
-
 	UBoxComponent* CollisionComp;
 
 protected:
@@ -33,7 +31,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void bounce(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION(BlueprintCallable, Category = "Target Collision")
+	void bounce(AActor* OverlappedActor, AActor* OtherActor);
 	
+	UFUNCTION(BlueprintCallable, Category = "Target Collision")
+	void HitByPlanet();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	bool beenHit;
+
 };
