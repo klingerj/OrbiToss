@@ -4,7 +4,7 @@
 
 
 // Sets default values
-AStar::AStar() : pos(0, 0, 0), mass(/*rand() % 15001 +*/ 20000), radius(50)
+AStar::AStar() : pos(0, 0, 0), mass(20000), radius(50)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

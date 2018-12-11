@@ -34,6 +34,9 @@ public:
     AGoalStar* captureStar;
 
     bool isCaptured;
+    float orbitLock;
+    float theta;
+    float vScale;
 
 	// If true, consider this planet/body in the force calculations of other bodies
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")

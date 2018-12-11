@@ -40,7 +40,6 @@ void ATarget::Tick(float DeltaTime)
 
 }
 
-// TODO: The collision isn't triggering for some reason?
 void ATarget::bounce(AActor* OverlappedActor, AActor* OtherActor) {
 
 }
