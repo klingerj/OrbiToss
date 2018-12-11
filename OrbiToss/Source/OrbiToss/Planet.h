@@ -5,6 +5,7 @@
 #include <cmath>
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "CosmicManager.h"
 #include "Engine/World.h"
 
 #include "CoreMinimal.h"
@@ -18,11 +19,7 @@ class ORBITOSS_API APlanet : public AActor
 	
 public:	
 	// Sets default values for this actor's properties
-	APlanet(const FObjectInitializer& objInit);
-
-	USphereComponent* CollisionComp;
-
-	UProjectileMovementComponent* ProjectileMovement;
+	APlanet();
 
 	// Universal Gravitational Constant, modified to fit our simulation
 	const float G = 6.67408; // SI units: 6.67408e-11 m^3/(kg * s^2); this way, all forces will be returned as F * 10^31. We will drop the coefficient
@@ -32,6 +29,11 @@ public:
 	float mass;
 	// Radius, in (10^3) m
 	float radius;
+
+    ACosmicManager* manager;
+    AGoalStar* captureStar;
+
+    bool isCaptured;
 
 	// If true, consider this planet/body in the force calculations of other bodies
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")

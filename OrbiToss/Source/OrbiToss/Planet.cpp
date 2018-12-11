@@ -4,72 +4,76 @@
 #include "Target.h"
 
 // Sets default values
-APlanet::APlanet(const FObjectInitializer& objInit) : Super(objInit), mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), considerForce(false), pos(500, 0, 0), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
+APlanet::APlanet() : mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), manager(nullptr), captureStar(nullptr), isCaptured(false), considerForce(true), pos(-195, -30, 100), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	//UE_LOG(LogClass, Log, TEXT("Consider force?????? %d"), considerForce);
-	/*CollisionComp = objInit.CreateDefaultSubobject<USphereComponent>(this, TEXT("SphereComponent"));
-	CollisionComp->InitSphereRadius(15.f);
-	CollisionComp->SetSimulatePhysics(false);
-	CollisionComp->SetEnableGravity(false);
-	CollisionComp->SetNotifyRigidBodyCollision(true);
-	CollisionComp->SetCollisionProfileName(TEXT("OverlapAll"));
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	RootComponent = CollisionComp;*/
-
-	//ProjectileMovement = objInit.CreateDefaultSubobject<UProjectileMovementComponent>(this, TEXT("ProjectileComp"));
-	//ProjectileMovement->UpdatedComponent = CollisionComp;
-	//ProjectileMovement->InitialSpeed = 100.f;
-	//ProjectileMovement->MaxSpeed = 100.f;
-	//ProjectileMovement->bRotationFollowsVelocity = true;
-	//ProjectileMovement->bShouldBounce = true;
-	//ProjectileMovement->ProjectileGravityScale = 0.0f;
-
-	//SetActorEnableCollision(true);
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
 void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
+
+    // Find and set the game manager
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACosmicManager::StaticClass(), FoundActors);
+    manager = (ACosmicManager*)FoundActors[0];
+
+    // Add this planet to the list of tracked planets
+    manager->planets.push_back(this);
 }
 
 // Called every frame
 void APlanet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//UE_LOG(LogClass, Log, TEXT("Consider force? %d"), considerForce);
-	if (considerForce) {
-		if (vel.Size() > 0) {
-			// TODO: Query all active planets in some planet vector you create in GameManager
-			// Create std::vector<APlanet> that stores all planets and loop over
-				// if (considerForce && distanceBetween != 0)
-					// totalForce += G*m1*m2 / (distanceBetween * distanceBetween)
-		}
+    if (!isCaptured) {
+        if (considerForce) {
+            force = FVector(0, 0, 0);
+            for (int i = 0; i < manager->stars.size(); ++i)
+            {
+                FVector dist = pos - manager->stars.at(i)->pos;
+                FVector dir = dist;
+                dir.Normalize();
+                force += -(G * mass * manager->stars.at(i)->mass) / (dist.Size() * dist.Size() * 0.01) * dir;
+            }
+            // Update position and velocity accordingly
+            acc = force / mass;
+            vel = vel + acc * DeltaTime;
+            pos = pos + vel * DeltaTime;
 
-		// TEST: Have the planet orbit a nonexistent sun located at the origin
-		FVector dist = pos - FVector(375, 0, 370); // Vector from sun to planet
-		FVector dir = dist;
-		dir.Normalize(); // Unit vector pointing from sun to planet
-		force = -(G * mass * 20000) / (dist.Size() * dist.Size() * 0.01) * dir; // Apply Law of Universal Gravitation
+            GetRootComponent()->ComponentVelocity = vel;
+            SetActorLocation(pos);
+        }
 
-		/*CollisionComp->AddForce(force, NAME_None, false);*/
+        // Check for capture
+        for (int i = 0; i < manager->goalStars.size(); ++i) {
+            AGoalStar* goal = manager->goalStars.at(i);
+            FVector toGoal = pos - goal->pos;
+            float orbit = goal->radius + goal->numPlanetsOrbiting * 200;
+            if (toGoal.Size() <= orbit) {
+                isCaptured = true;
+                considerForce = false;
+                captureStar = goal;
+                goal->numPlanetsOrbiting++;
 
-		//UWorld* const world = GetWorld();
-		//if (world) {
-		//	CollisionComp->AddForce(force, NAME_None, false);
-		//}
+                pos = goal->pos + FVector(orbit * cos(DeltaTime), orbit * sin(DeltaTime), 0);
+                vel = FVector(0);
+                acc = FVector(0);
+            }
+        }
 	}
-	// Euler integration
-	acc = force / mass;
-	vel = vel + acc * DeltaTime;
-	pos = pos + vel * DeltaTime;
+    // The planet has been captured in a goal star's orbit
+    else {
+        // Make sure these are set appropriately
+        considerForce = false;
 
-	// Update position and velocity accordingly
-	GetRootComponent()->ComponentVelocity = vel;
-	SetActorLocation(pos);
-	UE_LOG(LogClass, Log, TEXT("Velocity: (%f, %f, %f)"), vel[0], vel[1], vel[2]);
+        float orbit = captureStar->radius + captureStar->numPlanetsOrbiting * 200;
+        pos = captureStar->pos + FVector(orbit * cos(DeltaTime), orbit * sin(DeltaTime), 0);
+        vel = FVector(0);
+        acc = FVector(0);
+    }
 }
 
 void APlanet::BounceOffTarget(ATarget* target) {
@@ -88,7 +92,7 @@ void APlanet::BounceOffTarget(ATarget* target) {
 	// Outgoing vector
 	outvel = vel - 2.0 * FVector::DotProduct(vel, surfaceNormal) * surfaceNormal;
 	FVector tmp = 2.0 * FVector::DotProduct(vel, surfaceNormal) * surfaceNormal;
-	UE_LOG(LogClass, Log, TEXT("Intermediate vector: (%f, %f, %f)"), tmp[0], tmp[1], tmp[2])
+    UE_LOG(LogClass, Log, TEXT("Intermediate vector: (%f, %f, %f)"), tmp[0], tmp[1], tmp[2])
 		UE_LOG(LogClass, Log, TEXT("Surface normal: (%f, %f, %f)"), surfaceNormal[0], surfaceNormal[1], surfaceNormal[2])
 	
 	// Set resultant velocity
