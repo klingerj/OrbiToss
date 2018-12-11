@@ -48,6 +48,5 @@ void ATarget::bounce(AActor* OverlappedActor, AActor* OtherActor) {
 void ATarget::HitByPlanet() {
 	if (!beenHit) {
 		beenHit = true;
-		// TODO: numTargetsHit++;
 	}
 }

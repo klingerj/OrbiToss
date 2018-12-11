@@ -51,14 +51,21 @@ void APlanet::Tick(float DeltaTime)
         for (int i = 0; i < manager->goalStars.size(); ++i) {
             AGoalStar* goal = manager->goalStars.at(i);
             FVector toGoal = pos - goal->pos;
-            float orbit = goal->radius + goal->numPlanetsOrbiting * 200;
+            float orbit = goal->radius + goal->numPlanetsOrbiting * 30;
             if (toGoal.Size() <= orbit) {
                 isCaptured = true;
                 considerForce = false;
                 captureStar = goal;
                 goal->numPlanetsOrbiting++;
 
-                pos = goal->pos + FVector(orbit * cos(DeltaTime), orbit * sin(DeltaTime), 0);
+                float t = UGameplayStatics::GetTimeSeconds(GetWorld());
+                FVector goalToPlanet = pos - captureStar->pos;
+                goalToPlanet.Normalize();
+                float theta = atan2(goalToPlanet.Y, goalToPlanet.X);
+                float orbit = captureStar->radius + captureStar->numPlanetsOrbiting * 30;
+                pos = captureStar->pos + FVector(orbit * cos(0.1 * (t - theta)), orbit * sin(0.1 * (t - theta)), 0);
+
+                SetActorLocation(pos);
                 vel = FVector(0);
                 acc = FVector(0);
             }
@@ -69,8 +76,14 @@ void APlanet::Tick(float DeltaTime)
         // Make sure these are set appropriately
         considerForce = false;
 
-        float orbit = captureStar->radius + captureStar->numPlanetsOrbiting * 200;
-        pos = captureStar->pos + FVector(orbit * cos(DeltaTime), orbit * sin(DeltaTime), 0);
+        float t = UGameplayStatics::GetTimeSeconds(GetWorld());
+        FVector goalToPlanet = pos - captureStar->pos;
+        goalToPlanet.Normalize();
+        float theta = atan2(goalToPlanet.Y, goalToPlanet.X);
+        float orbit = captureStar->radius + captureStar->numPlanetsOrbiting * 30;
+        pos = captureStar->pos + FVector(orbit * cos(0.5 * (t - theta)), orbit * sin(0.5 * (t - theta)), 0);
+
+        SetActorLocation(pos);
         vel = FVector(0);
         acc = FVector(0);
     }

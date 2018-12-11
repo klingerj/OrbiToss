@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GoalStar.h"
+#include "Target.h"
 #include "Kismet/GameplayStatics.h"
 #include <vector>
 
@@ -24,9 +25,17 @@ public:
     std::vector<APlanet*> planets;
     std::vector<AStar*> stars;
     std::vector<AGoalStar*> goalStars;
+    std::vector<ATarget*> targets;
 
     int numCompleteGoals;
+    int optimalSolution;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planets Used")
+    int numPlanetsUsed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target Requirement")
     int numTargetsHit;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target Requirement")
     int numTargetsRequired;
 
     int levelID;
