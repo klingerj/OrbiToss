@@ -4,7 +4,7 @@
 #include "Target.h"
 
 // Sets default values
-APlanet::APlanet(const FObjectInitializer& objInit) : Super(objInit), mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), considerForce(false), pos(500, 0, 0), vel(0, 50, 0), acc(0, 0, 0), force(0, 0, 0)
+APlanet::APlanet(const FObjectInitializer& objInit) : Super(objInit), mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), considerForce(false), pos(500, 0, 0), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -62,13 +62,14 @@ void APlanet::Tick(float DeltaTime)
 		//}
 	}
 	// Euler integration
-	acc = FVector(0, 0, 0); //force / mass;
+	acc = force / mass;
 	vel = vel + acc * DeltaTime;
 	pos = pos + vel * DeltaTime;
 
 	// Update position and velocity accordingly
 	GetRootComponent()->ComponentVelocity = vel;
 	SetActorLocation(pos);
+	UE_LOG(LogClass, Log, TEXT("Velocity: (%f, %f, %f)"), vel[0], vel[1], vel[2]);
 }
 
 void APlanet::BounceOffTarget(ATarget* target) {
