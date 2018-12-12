@@ -4,7 +4,7 @@
 #include "Target.h"
 
 // Sets default values
-APlanet::APlanet() : mass(rand() % 100 + 1), radius(rand() % 3001 + 4000), manager(nullptr), captureStar(nullptr), isCaptured(false), considerForce(true), pos(-195, -30, 100), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
+APlanet::APlanet() : mass(rand() % 100 + 1), radius(10), manager(nullptr), captureStar(nullptr), isCaptured(false), orbitLock(0), theta(0), vScale(0), considerForce(true), pos(0, 0, 0), vel(0, 0, 0), acc(0, 0, 0), force(0, 0, 0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
@@ -51,14 +51,26 @@ void APlanet::Tick(float DeltaTime)
         for (int i = 0; i < manager->goalStars.size(); ++i) {
             AGoalStar* goal = manager->goalStars.at(i);
             FVector toGoal = pos - goal->pos;
-            float orbit = goal->radius + goal->numPlanetsOrbiting * 200;
-            if (toGoal.Size() <= orbit) {
+            float lock = goal->radius + 1.5 * radius + goal->numPlanetsOrbiting * 30;
+
+            // Capture condition
+            if (toGoal.Size() <= lock) {
+                orbitLock = lock;
                 isCaptured = true;
                 considerForce = false;
                 captureStar = goal;
                 goal->numPlanetsOrbiting++;
 
-                pos = goal->pos + FVector(orbit * cos(DeltaTime), orbit * sin(DeltaTime), 0);
+                float t = UGameplayStatics::GetTimeSeconds(GetWorld());
+
+                FVector goalToPlanet = pos - captureStar->pos;
+                goalToPlanet.Normalize();
+                theta = atan2(goalToPlanet.X, goalToPlanet.Y);
+
+                vScale = 0.5 / captureStar->numPlanetsOrbiting;
+                pos = captureStar->pos + FVector(orbitLock * cos(vScale * (t - theta)), orbitLock * sin(vScale * (t - theta)), 0);
+
+                SetActorLocation(pos);
                 vel = FVector(0);
                 acc = FVector(0);
             }
@@ -66,11 +78,14 @@ void APlanet::Tick(float DeltaTime)
 	}
     // The planet has been captured in a goal star's orbit
     else {
-        // Make sure these are set appropriately
+        // Make sure force consideration and collision detection are off when locked into the orbital plane
         considerForce = false;
+        SetActorEnableCollision(false);
 
-        float orbit = captureStar->radius + captureStar->numPlanetsOrbiting * 200;
-        pos = captureStar->pos + FVector(orbit * cos(DeltaTime), orbit * sin(DeltaTime), 0);
+        float t = UGameplayStatics::GetTimeSeconds(GetWorld());
+        pos = captureStar->pos + FVector(orbitLock * cos(vScale * (t - theta)), orbitLock * sin(vScale * (t - theta)), 0);
+
+        SetActorLocation(pos);
         vel = FVector(0);
         acc = FVector(0);
     }

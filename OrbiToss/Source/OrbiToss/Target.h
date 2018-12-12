@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Planet.h"
 #include "Components/BoxComponent.h"
 
 #include "CoreMinimal.h"

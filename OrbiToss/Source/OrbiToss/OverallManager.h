@@ -31,4 +31,13 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Completion State")
     bool level3Complete;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Completion State")
+    int level1Score;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Completion State")
+    int level2Score;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Completion State")
+    int level3Score;
 };

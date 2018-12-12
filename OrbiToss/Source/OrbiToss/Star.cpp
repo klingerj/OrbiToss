@@ -4,7 +4,7 @@
 
 
 // Sets default values
-AStar::AStar() : pos(375, 0, 370), mass(/*rand() % 15001 +*/ 20000), radius(rand() % 10001 + 1000)
+AStar::AStar() : pos(0, 0, 0), mass(20000), radius(50)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -15,6 +15,8 @@ AStar::AStar() : pos(375, 0, 370), mass(/*rand() % 15001 +*/ 20000), radius(rand
 void AStar::BeginPlay()
 {
 	Super::BeginPlay();
+
+    pos = GetActorTransform().GetLocation();
 	
 }
 
