@@ -31,9 +31,13 @@ public:
 	float radius;
 
     ACosmicManager* manager;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")
     AGoalStar* captureStar;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet Physics")
     bool isCaptured;
+
     float orbitLock;
     float theta;
     float vScale;
